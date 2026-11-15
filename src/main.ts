@@ -3,6 +3,7 @@ import type { Booking, WorkshopId } from './models/booking'
 import { initialBookings } from './data/initial-bookings'
 import { TYPESCRIPT_CAPACITY, BUILD_CAPACITY } from './data/capacities'
 import { countSeats } from './lib/count-seats'
+import { getRemainingSeats } from './lib/availability'
 // HW-Б1: подключите расчёты из ./lib/availability.
 // HW-Б2: импортируйте ./assets/workshops.svg как URL.
 
@@ -112,25 +113,32 @@ if (!(form instanceof HTMLFormElement) || !(list instanceof HTMLUListElement)
 // Проверенные DOM-элементы уже готовы к использованию.
 const ui = { form, list, total, message, workshop, typescriptFree, buildFree, logo, notice }
 ui.workshop.disabled = false
+ui.notice.hidden = true
 
 // HW-А4: сделайте список ui.workshop доступным для выбора уже при проверке А2.
 // Здесь же скройте или удалите найденный ui.notice после проверки DOM выше.
 // HW-Б2: задайте ui.logo.src, alt и покажите изображение.
 
-function render(items: Booking[]) {
+function render(items: Booking[]): void {
   ui.list.replaceChildren()
+
   items.forEach((booking) => {
     const item = document.createElement('li')
     const title = document.createElement('strong')
     const details = document.createElement('span')
+
     title.textContent = booking.name
-    // HW-А4: добавьте название занятия в подробности карточки.
-    details.textContent = `${booking.seats} участн. · ${booking.status === 'confirmed' ? 'Подтверждена' : 'Новая'} · ${booking.source}`
+
+    const workshopName = booking.workshop === 'typescript' ? 'TypeScript' : 'Сборка проекта'
+    details.textContent = `${workshopName} · ${booking.seats} участн. · ${booking.status === 'confirmed' ? 'Подтверждена' : 'Новая'} · ${booking.source}`
+
     item.append(title, details)
     ui.list.append(item)
   })
+
   ui.total.textContent = String(countSeats(items))
-  // HW-А4: обновите ui.typescriptFree и ui.buildFree через общий расчёт.
+  ui.typescriptFree.textContent = String(getRemainingSeats(items, 'typescript'))
+  ui.buildFree.textContent = String(getRemainingSeats(items, 'build'))
 }
 
 ui.form.addEventListener('submit', (event) => {
@@ -154,9 +162,14 @@ ui.form.addEventListener('submit', (event) => {
     ui.message.textContent = 'Выберите занятие из списка.'
     return
   }
-  // HW-А3: сравните число участников с остатком мест выбранного занятия до изменения bookings.
+  const remaining = getRemainingSeats(bookings, workshop)
 
-    const booking: Booking = {
+  if (seats > remaining) {
+    ui.message.textContent = `Недостаточно мест. Свободно: ${remaining}. Участников: ${seats}.`
+    return
+  }
+
+  const booking: Booking = {
     id: crypto.randomUUID(),
     name: rawName.trim(),
     seats,
