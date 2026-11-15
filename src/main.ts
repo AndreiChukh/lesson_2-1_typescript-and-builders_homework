@@ -4,6 +4,7 @@ import { initialBookings } from './data/initial-bookings'
 import { TYPESCRIPT_CAPACITY, BUILD_CAPACITY } from './data/capacities'
 import { countSeats } from './lib/count-seats'
 import { getRemainingSeats } from './lib/availability'
+import workshopsUrl from './assets/workshops.svg'
 // HW-Б1: подключите расчёты из ./lib/availability.
 // HW-Б2: импортируйте ./assets/workshops.svg как URL.
 
@@ -114,6 +115,9 @@ if (!(form instanceof HTMLFormElement) || !(list instanceof HTMLUListElement)
 const ui = { form, list, total, message, workshop, typescriptFree, buildFree, logo, notice }
 ui.workshop.disabled = false
 ui.notice.hidden = true
+ui.logo.src = workshopsUrl
+ui.logo.alt = ''
+ui.logo.hidden = false
 
 // HW-А4: сделайте список ui.workshop доступным для выбора уже при проверке А2.
 // Здесь же скройте или удалите найденный ui.notice после проверки DOM выше.
